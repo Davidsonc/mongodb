@@ -2,7 +2,7 @@ function App() {
   return (
     <>
       <div>
-        <h1>MEU APP</h1>
+        <h1 className="text-3xl">MEU APP REACT</h1>
       </div>
     </>
   );

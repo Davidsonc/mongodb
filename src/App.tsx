@@ -11,10 +11,11 @@ interface CustomerProps {
 }
 
 function App() {
+  //#region Constantes
   const [customers, setCustomers] = useState<CustomerProps[]>([]);
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
-
+  //#endregion Constantes
   useEffect(() => {
     loadCustomers();
   }, []);

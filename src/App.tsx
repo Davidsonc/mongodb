@@ -7,13 +7,13 @@ interface CustomerProps {
   name: string;
   email: string;
   status: boolean;
-  created_at: string;
+  createdAt: string;
 }
 
 function App() {
   const [customers, setCustomers] = useState<CustomerProps[]>([]);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const emailInputRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadCustomers();
@@ -24,20 +24,36 @@ function App() {
     setCustomers(response.data);
   }
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    const name = nameInputRef.current?.value;
-    const email = emailInputRef.current?.value;
+    if (!nameRef.current?.value || !emailRef.current?.value) return;
 
-    if (name && email) {
-      api.post("/customers", { name, email });
-      nameInputRef.current.value = "";
-      emailInputRef.current.value = "";
+    const response = await api.post("/customer", {
+      name: nameRef.current?.value,
+      email: emailRef.current?.value,
+    });
+    setCustomers((allCustomers) => [...allCustomers, response.data]);
+    nameRef.current.value = "";
+    emailRef.current.value = "";
+    nameRef.current.focus();
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await api.delete(`/customer`, {
+        params: {
+          id,
+        },
+      });
+      const allCustomers = customers.filter((customer) => customer.id !== id);
+      setCustomers(allCustomers);
+    } catch (error) {
+      console.log(error);
     }
   }
 
   return (
-    <div className="flex justify-center w-full min-h-screen px-4 bg-gray-900">
+    <div className="flex justify-center min-h-screen px-4 bg-gray-900">
       <main className="w-full my-10 sm:max-w-2xl">
         <h1 className="text-4xl font-medium text-white">Clientes</h1>
         <form className="flex flex-col my-6" onSubmit={handleSubmit}>
@@ -46,14 +62,14 @@ function App() {
             className="w-full p-2 mb-2 rounded"
             type="text"
             placeholder="Digite seu nome completo"
-            ref={nameInputRef}
+            ref={nameRef}
           />
           <label className="font-medium text-white ">Email:</label>
           <input
             className="w-full p-2 mb-2 rounded"
             type="email"
             placeholder="Digite seu e-mail"
-            ref={emailInputRef}
+            ref={emailRef}
           />
           <input
             type="submit"
@@ -68,6 +84,9 @@ function App() {
               className="relative w-full p-2 transition-transform bg-white rounded-lg hover:scale-105"
             >
               <p>
+                <span className="font-medium">ID</span> {customer.id}
+              </p>
+              <p>
                 <span className="font-medium">Nome</span> {customer.name}
               </p>
               <p>
@@ -77,7 +96,13 @@ function App() {
                 <span className="font-medium">Status</span>{" "}
                 {customer.status ? "Ativo" : "Inativo"}
               </p>
-              <button className="absolute right-0 flex items-center p-2 mt-2 bg-red-500 rounded-lg justify-center-center text-red w-7 h-7 -top-3">
+              <p>
+                <span className="font-medium">Criado</span> {customer.createdAt}
+              </p>
+              <button
+                className="absolute right-0 flex items-center p-2 mt-2 bg-red-500 rounded-lg justify-center-center text-red w-7 h-7 -top-7"
+                onClick={() => handleDelete(customer.id)}
+              >
                 <FiTrash size={18} color="#FFF" />
               </button>
             </article>
